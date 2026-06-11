@@ -316,7 +316,7 @@ export default function EditorPlanta() {
             }
         });
 
-        Object.entries(clipboard.beacons).forEach(([macVieja, posicion]) => {
+        Object.entries(clipboard.beacons).forEach(([_macVieja, posicion]) => {
             const nuevaMac = `MAC_${Date.now().toString().slice(-6)}_${Math.random().toString(36).substring(2, 4).toUpperCase()}`;
             nuevosBeacons[nuevaMac] = { 
                 x: posicion.x + offset, 

@@ -6,14 +6,14 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Las dos líneas mágicas para el atajo @ */
+    /* */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
     
-    /* LA LÍNEA NUEVA PARA CALLAR EL AVISO */
-    "ignoreDeprecations": "6.0",
+    /* */
+    //"ignoreDeprecations": "6.0",
 
     /* Bundler mode */
     "moduleResolution": "bundler",
