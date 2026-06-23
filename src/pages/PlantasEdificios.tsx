@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -26,6 +25,8 @@ import {
   Route 
 } from "lucide-react"
 
+import { mapaService } from "@/api/api"
+
 export default function PlantasEdificio() {
   const { mapaId } = useParams() 
   const navigate = useNavigate()
@@ -47,8 +48,8 @@ export default function PlantasEdificio() {
 
   const cargarDatosEdificio = async () => {
     try {
-      const respuesta = await axios.get(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}`)
-      setEdificio(respuesta.data)
+      const data = await mapaService.getMapaId(mapaId!)
+      setEdificio(data)
     } catch (error) {
       console.error("Error al cargar el edificio:", error)
     } finally {
@@ -80,7 +81,7 @@ export default function PlantasEdificio() {
 
     setGuardando(true)
     try {
-      await axios.post(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}/plantas`, nuevaPlanta)
+      await mapaService.crearPlanta(mapaId!, nuevaPlanta)
       setModalAbierto(false)
       cargarDatosEdificio() 
     } catch (error) { 
@@ -96,7 +97,7 @@ export default function PlantasEdificio() {
     if (!confirmacion) return
 
     try {
-      await axios.delete(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}/plantas/${plantaIdToDelete}`)
+      await mapaService.eliminarPlanta(mapaId!, plantaIdToDelete)
       cargarDatosEdificio() 
     } catch (error) {
       console.error("Error al borrar planta:", error)

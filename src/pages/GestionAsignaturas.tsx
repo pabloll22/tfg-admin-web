@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { useNavigate, useLocation } from "react-router-dom"
 import {
   Table,
@@ -33,6 +32,8 @@ import {
   ArrowLeft,
   ChevronRight
 } from "lucide-react"
+
+import { horarioService, mapaService } from "@/api/api"
 
 // Estructuras de datos
 interface Asignatura {
@@ -79,13 +80,13 @@ export default function GestionAsignaturas() {
   // --- CARGAR DATOS ---
   const cargarDatos = async () => {
     try {
-      const [resAsignaturas, resMapas] = await Promise.all([
-        axios.get("https://tfg-controluma.onrender.com/api/horarios/asignaturas"),
-        axios.get("https://tfg-controluma.onrender.com/api/mapas")
+      const [dataAsignaturas, dataMapas] = await Promise.all([
+        horarioService.getAsignaturas(),
+        mapaService.getListaMapas()
       ])
       
-      setAsignaturas(resAsignaturas.data)
-      setMapas(resMapas.data)
+      setAsignaturas(dataAsignaturas)
+      setMapas(dataMapas)
     } catch (error) {
       console.error("Error al cargar datos:", error)
     } finally {
@@ -168,7 +169,7 @@ export default function GestionAsignaturas() {
             nombre: esBase ? `Asignatura Base - ${titulacion}` : asig.nombre, 
             facultadId: facultadId 
           }
-          return axios.put(`https://tfg-controluma.onrender.com/api/horarios/asignaturas/${asig._id}`, payload)
+          return horarioService.editarAsignatura(asig._id, payload)
         })
 
         await Promise.all(promesas)
@@ -191,9 +192,9 @@ export default function GestionAsignaturas() {
             }
 
         if (modoModal === "EDITAR_ASIGNATURA") {
-          await axios.put(`https://tfg-controluma.onrender.com/api/horarios/asignaturas/${idEditando}`, payload)
+          await horarioService.editarAsignatura(idEditando, payload)
         } else {
-          await axios.post("https://tfg-controluma.onrender.com/api/horarios/asignaturas", payload)
+          await horarioService.crearAsignatura(payload)
         }
       }
 
@@ -212,7 +213,7 @@ export default function GestionAsignaturas() {
     if (!confirmacion) return
 
     try {
-      await axios.delete(`https://tfg-controluma.onrender.com/api/horarios/asignaturas/${id}`)
+      await horarioService.eliminarAsignatura(id)
       setAsignaturas(prev => prev.filter(a => a._id !== id))
     } catch (error) {
       console.error("Error al eliminar:", error)
@@ -229,7 +230,7 @@ export default function GestionAsignaturas() {
     setCargando(true)
     try {
       const promesasBorrado = asignaturasDelGrado.map(asig => 
-        axios.delete(`https://tfg-controluma.onrender.com/api/horarios/asignaturas/${asig._id}`)
+        horarioService.eliminarAsignatura(asig._id)
       )
       await Promise.all(promesasBorrado)
       

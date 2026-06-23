@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
 import {
   Table,
   TableBody,
@@ -19,6 +18,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Pencil, Trash2, Search, User, Loader2, ShieldCheck, UserCheck, GraduationCap } from "lucide-react"
+
+import { usuarioService } from "@/api/api"
 
 interface Usuario {
   idUsuario: string;
@@ -46,8 +47,8 @@ export default function Usuarios() {
 
   const cargarUsuariosDeMongoDB = async () => {
     try {
-      const respuesta = await axios.get("https://tfg-controluma.onrender.com/api/usuario/todos") 
-      setUsuarios(respuesta.data)
+      const data = await usuarioService.getTodosUsuarios()
+      setUsuarios(data)
     } catch (error) {
       console.error("Error al traer usuarios de Mongo:", error)
     } finally {
@@ -90,9 +91,9 @@ export default function Usuarios() {
 
     try {
       if (modoModal === "CREAR") {
-        await axios.post("https://tfg-controluma.onrender.com/api/usuario", payload)
+        await usuarioService.crearUsuario(payload)
       } else {
-        await axios.put(`https://tfg-controluma.onrender.com/api/usuario/${idUsuario}`, payload)
+        await usuarioService.editarUsuario(idUsuario, payload)
       }
       setModalAbierto(false)
       cargarUsuariosDeMongoDB() 
@@ -109,7 +110,7 @@ export default function Usuarios() {
     if (!confirmacion) return
 
     try {
-      await axios.delete(`https://tfg-controluma.onrender.com/api/usuario/${idUsuarioAEliminar}`)
+      await usuarioService.eliminarUsuario(idUsuarioAEliminar)
       setUsuarios(usuariosActuales => usuariosActuales.filter(user => user.idUsuario !== idUsuarioAEliminar))
     } catch (error) {
       console.error("Error al eliminar el usuario:", error)

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import axios from "axios"
 import {
   Table,
   TableBody,
@@ -34,6 +33,8 @@ import {
   Layers,
   Pencil
 } from "lucide-react"
+
+import { horarioService, usuarioService, mapaService } from "@/api/api"
 
 // Interfaces
 interface Sesion {
@@ -90,13 +91,17 @@ export default function SesionesAsignatura() {
 
   const cargarDatos = async () => {
     try {
-      const resSesiones = await axios.get(`https://tfg-controluma.onrender.com/api/horarios/asignaturas/${asignaturaId}/sesiones`)
-      const resUsuarios = await axios.get("https://tfg-controluma.onrender.com/api/usuario/todos")
-      const listaProfesores = resUsuarios.data.filter((u: any) => u.rol === "PROFESOR" || u.rol === "ADMIN")
-      const resAsignaturas = await axios.get("https://tfg-controluma.onrender.com/api/horarios/asignaturas")
-      const asigActual = resAsignaturas.data.find((a: any) => a._id === asignaturaId)
+      // Lanzamos las tres peticiones a la vez para que cargue ultra rápido
+      const [dataSesiones, dataUsuarios, dataAsignaturas] = await Promise.all([
+        horarioService.getSesionesAsignatura(asignaturaId!),
+        usuarioService.getTodosUsuarios(),
+        horarioService.getAsignaturas()
+      ])
       
-      setSesiones(resSesiones.data)
+      const listaProfesores = dataUsuarios.filter((u: any) => u.rol === "PROFESOR" || u.rol === "ADMIN")
+      const asigActual = dataAsignaturas.find((a: any) => a._id === asignaturaId)
+      
+      setSesiones(dataSesiones)
       setProfesores(listaProfesores)
       setAsignaturaInfo(asigActual)
       
@@ -145,10 +150,10 @@ export default function SesionesAsignatura() {
     setCargandoMapa(true)
     
     try {
-      const res = await axios.get(`https://tfg-controluma.onrender.com/api/mapas/${asignaturaInfo.facultadId}`)
-      setDatosEdificio(res.data)
-      if (res.data.plantas?.length > 0) {
-        setPlantaActivaId(res.data.plantas[0].plantaId)
+      const data = await mapaService.getMapaId(asignaturaInfo.facultadId)
+      setDatosEdificio(data)
+      if (data.plantas?.length > 0) {
+        setPlantaActivaId(data.plantas[0].plantaId)
       }
     } catch (error) {
       console.error("Error al cargar el mapa:", error)
@@ -174,9 +179,9 @@ export default function SesionesAsignatura() {
 
     try {
       if (modoModal === "CREAR") {
-        await axios.post("https://tfg-controluma.onrender.com/api/horarios/sesion/crear", payload)
+        await horarioService.crearSesion(payload)
       } else {
-        await axios.put(`https://tfg-controluma.onrender.com/api/horarios/sesiones/${sesionEditandoId}`, payload)
+        await horarioService.editarSesion(sesionEditandoId, payload)
       }
       
       setModalAbierto(false)
@@ -192,7 +197,7 @@ export default function SesionesAsignatura() {
   const handleEliminarSesion = async (id: string) => {
     if (!window.confirm("⚠️ ¿Eliminar esta clase del horario?")) return
     try {
-      await axios.delete(`https://tfg-controluma.onrender.com/api/horarios/sesiones/${id}`)
+      await horarioService.eliminarSesion(id)
       setSesiones(prev => prev.filter(s => s._id !== id))
     } catch (error) {
       console.error("Error al eliminar:", error)

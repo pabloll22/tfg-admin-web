@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
+
 import { 
   Calendar, 
   Filter, 
@@ -12,6 +12,8 @@ import {
   Users,
   GraduationCap
 } from "lucide-react"
+
+import { horarioService } from "@/api/api"
 
 interface Asignatura {
   _id: string;
@@ -76,10 +78,10 @@ export default function CalendarioAcademico() {
   useEffect(() => {
     const cargarAsignaturas = async () => {
       try {
-        const res = await axios.get("https://tfg-controluma.onrender.com/api/horarios/asignaturas")
+        const data = await horarioService.getAsignaturas()
         
-        // --- LA MAGIA: Filtramos las asignaturas base para que el calendario ni las vea ---
-        const asignaturasReales = res.data.filter((a: Asignatura) => !a.nombre.startsWith("Asignatura Base -"));
+        // Filtramos las asignaturas base para que el calendario ni las vea 
+        const asignaturasReales = data.filter((a: Asignatura) => !a.nombre.startsWith("Asignatura Base -"));
         
         setAsignaturas(asignaturasReales)
         
@@ -123,10 +125,10 @@ export default function CalendarioAcademico() {
       setCargandoSesiones(true)
       try {
         const promesas = Array.from(asignaturasSeleccionadas).map(id => 
-          axios.get(`https://tfg-controluma.onrender.com/api/horarios/asignaturas/${id}/sesiones`)
+          horarioService.getSesionesAsignatura(id)
         )
         const respuestas = await Promise.all(promesas)
-        const todasLasSesiones = respuestas.flatMap(res => res.data)
+        const todasLasSesiones = respuestas.flat()
         setSesiones(todasLasSesiones)
       } catch (error) {
         console.error("Error al cargar sesiones del calendario:", error)

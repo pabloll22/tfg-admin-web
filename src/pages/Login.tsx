@@ -1,10 +1,10 @@
 import { useState } from "react"
-import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Lock, User, ShieldAlert, Navigation } from "lucide-react"
+import { authService } from "@/api/api"
 
 export default function Login() {
   const [idUsuario, setIdUsuario] = useState("")
@@ -27,12 +27,12 @@ export default function Login() {
     try {
       // Ajusta la URL base según cómo hayas montado tus rutas en el index.js del backend
       // Suponiendo que las rutas de auth cuelgan de /api/auth
-      const respuesta = await axios.post("https://tfg-controluma.onrender.com/api/auth/login", {
+      const data = await authService.login({
         idUsuario,
         password
       })
 
-      const { token, usuario } = respuesta.data
+      const { token, usuario } = data
 
       // VALIDACIÓN CRÍTICA: Solo permitimos el paso a administradores
       if (usuario.rol !== "ADMIN") {

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { 
@@ -11,6 +10,8 @@ import {
   Loader2,
   Image as ImageIcon
 } from "lucide-react"
+
+import { mapaService } from "@/api/api"
 
 // Interfaces basadas en tu modelo de base de datos
 interface Planta {
@@ -42,12 +43,12 @@ export default function SelectorRutas() {
     const cargarMapasBasicos = async () => {
       try {
         // Carga la lista de mapas (viene sin el array de plantas por optimización)
-        const respuesta = await axios.get("https://tfg-controluma.onrender.com/api/mapas")
-        setMapas(respuesta.data)
+        const data = await mapaService.getListaMapas()
+        setMapas(data)
         
         // Si hay mapas, cargamos los detalles completos del primero
-        if (respuesta.data.length > 0) {
-          handleSeleccionarMapa(respuesta.data[0])
+        if (data.length > 0) {
+          handleSeleccionarMapa(data[0])
         }
       } catch (error) {
         console.error("Error al cargar mapas:", error)
@@ -65,8 +66,8 @@ export default function SelectorRutas() {
     setCargandoPlantas(true) // Activamos el spinner de la derecha
 
     try {
-      const respuesta = await axios.get(`https://tfg-controluma.onrender.com/api/mapas/${mapaBase.mapaId}`)
-      setMapaSeleccionado(respuesta.data) // Sobrescribimos con los datos completos
+      const data = await mapaService.getMapaId(mapaBase.mapaId)
+      setMapaSeleccionado(data) // Sobrescribimos con los datos completos
     } catch (error) {
       console.error("Error al traer los detalles del mapa:", error)
     } finally {

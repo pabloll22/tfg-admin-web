@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import {
   Table,
@@ -20,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Pencil, Trash2, Search, Building2, Loader2, ExternalLink, Map as MapIcon, Eye } from "lucide-react"
+import { mapaService } from "@/api/api"
 
 // Ampliamos la interfaz para incluir las dimensiones y la URL
 interface MapaResumen {
@@ -52,8 +52,8 @@ export default function Mapas() {
 
   const cargarMapas = async () => {
     try {
-      const respuesta = await axios.get("https://tfg-controluma.onrender.com/api/mapas")
-      setMapas(respuesta.data)
+      const data = await mapaService.getListaMapas()
+      setMapas(data)
     } catch (error) {
       console.error("Error al cargar mapas:", error)
     } finally {
@@ -115,9 +115,9 @@ export default function Mapas() {
 
     try {
       if (modoModal === "CREAR") {
-        await axios.post("https://tfg-controluma.onrender.com/api/mapas", payload)
+        await mapaService.crearMapa(payload)
       } else {
-        await axios.put(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}`, payload)
+        await mapaService.editarMapa(mapaId, payload)
       }
       
       setOpen(false)
@@ -139,7 +139,7 @@ export default function Mapas() {
     if (!confirmacion) return
 
     try {
-      await axios.delete(`https://tfg-controluma.onrender.com/api/mapas/${idAEliminar}`)
+      await mapaService.eliminarMapa(idAEliminar)
       setMapas(mapasActuales => mapasActuales.filter(mapa => mapa.mapaId !== idAEliminar))
     } catch (error) {
       console.error("Error al eliminar el edificio:", error)

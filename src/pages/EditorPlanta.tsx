@@ -17,6 +17,8 @@ import {
     Crosshair, MoveHorizontal, MoveVertical, ArrowUpRight, Building2, Loader2, Save
 } from "lucide-react";
 
+import { mapaService } from "@/api/api";
+
 export default function EditorPlanta() {
     const { mapaId, plantaId } = useParams();
     const navigate = useNavigate();
@@ -90,9 +92,10 @@ export default function EditorPlanta() {
 
     const cargarDatos = async () => {
         try {
-            const respuesta = await axios.get(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}`);
-            setEdificio(respuesta.data);
-            const plantaEncontrada = respuesta.data.plantas?.find((p: any) => p.plantaId === plantaId);
+            const edificioData = await mapaService.getMapaId(mapaId!);
+            
+            setEdificio(edificioData);
+            const plantaEncontrada = edificioData.plantas?.find((p: any) => p.plantaId === plantaId);
             setPlanta(plantaEncontrada);
             if (plantaEncontrada) {
                 setNodos(plantaEncontrada.nodos || []);
@@ -109,18 +112,27 @@ export default function EditorPlanta() {
     }, [mapaId, plantaId]);
 
     const guardarNodosBD = async (nodosAct: any[]) => { 
-        await axios.put(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}/plantas/${plantaId}/nodos`, { nodos: nodosAct })
-            .catch(() => alert("Error al guardar nodos")); 
+        try {
+            await mapaService.guardarNodos(mapaId!, plantaId!, nodosAct);
+        } catch (error) {
+            alert("Error al guardar nodos. ¿Tienes permisos?");
+        }
     };
     
     const guardarPoisBD = async (poisAct: any[]) => { 
-        await axios.put(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}/plantas/${plantaId}/pois`, { pois: poisAct })
-            .catch(() => alert("Error")); 
+        try {
+            await mapaService.guardarPois(mapaId!, plantaId!, poisAct);
+        } catch (error) {
+            alert("Error al guardar POIs.");
+        } 
     };
     
     const guardarBeaconsBD = async (beaconsAct: Record<string, { x: number; y: number }>) => { 
-        await axios.put(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}/plantas/${plantaId}/beacons`, { beacons: beaconsAct })
-            .catch(() => alert("Error")); 
+        try {
+            await mapaService.guardarBeacons(mapaId!, plantaId!, beaconsAct);
+        } catch (error) {
+            alert("Error al guardar Beacons.");
+        }
     };
 
     // ========================================================
