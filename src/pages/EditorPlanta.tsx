@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -892,7 +891,7 @@ export default function EditorPlanta() {
                     }
                     return n;
                 });
-                await axios.put(`https://tfg-controluma.onrender.com/api/mapas/${mapaId}/plantas/${plantaDestinoId}/nodos`, { nodos: nuevosNodosDestino });
+                await mapaService.guardarNodos(mapaId!, plantaDestinoId, nuevosNodosDestino);
             }
 
             setModalConexionAbierto(false);
